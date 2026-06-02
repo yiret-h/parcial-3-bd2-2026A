@@ -1,214 +1,121 @@
 <?php
 session_start();
-
-if (!isset($_SESSION['usuario'])) {
-    header("Location: index.php");
-    exit();
-}
-
+if (!isset($_SESSION['usuario'])) { header("Location: index.php"); exit(); }
 $nombre_usuario = $_SESSION['usuario'];
-$rol_usuario = $_SESSION['rol'];
+$rol_usuario    = $_SESSION['rol'];
+$titulo_pagina  = 'Panel de Control';
+$pagina_activa  = 'dashboard';
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Principal - Clínica Veterinaria</title>
+    <title>Dashboard - Huellitas</title>
+    <link rel="stylesheet" href="huellitas-shared.css">
+    <link rel="stylesheet" href="huellitas-layout.css">
     <style>
-        /* Diseño de la interfaz con menú lateral fijo */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background-color: #f4f7f6;
-            display: flex;
+        /* ── Welcome banner ── */
+        .welcome-banner {
+            background: linear-gradient(135deg,#006805 0%,#1a9e2a 50%,#3dba4e 100%);
+            border-radius: 14px; padding: 28px 32px; color: white;
+            margin-bottom: 26px; position: relative; overflow: hidden;
+        }
+        .welcome-banner::after {
+            content:'🐾'; position:absolute; right:28px; top:50%;
+            transform:translateY(-50%); font-size:80px; opacity:.14;
+        }
+        .welcome-banner h1 { font-family:'Nunito',sans-serif; font-size:24px; font-weight:800; margin-bottom:5px; }
+        .welcome-banner p  { opacity:.9; font-size:14px; }
+
+        .section-label {
+            font-family:'Nunito',sans-serif; font-size:12px; font-weight:800;
+            color:var(--color-muted); text-transform:uppercase; letter-spacing:1px;
+            margin-bottom:14px;
         }
 
-        /* Estilos del menú lateral */
-        .sidebar {
-            width: 260px;
-            height: 100vh;
-            background-color: #006805;
-            color: white;
-            position: fixed;
-            top: 0;
-            left: 0;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-
-        .sidebar-header {
-            padding: 25px;
-            text-align: center;
-            background-color: #074e0b;
-            border-bottom: 1px solid #074e0b;
-        }
-
-        .sidebar-header h3 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 600;
-            color: #e4ffea;
-        }
-
-        .user-info {
-            padding: 15px 25px;
-            background-color: #0a5f0e;
-            font-size: 14px;
-            border-bottom: 1px solid #0a5f0e;
-        }
-
-        .user-info span {
-            display: block;
-            color: #ffffff;
-        }
-
-        .user-info .rol {
-            color: #eeff00;
-            font-weight: bold;
-            font-size: 12px;
-            text-transform: uppercase;
-            margin-top: 3px;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .sidebar-menu li a {
-            display: block;
-            padding: 15px 25px;
-            color: #ecf0f1;
-            text-decoration: none;
-            font-size: 15px;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-        }
-
-        .sidebar-menu li a:hover {
-            background-color: #3d8d58;
-            border-left-color: #227446;
-            padding-left: 30px;
-        }
-
-        .btn-logout {
-            background-color: #075521;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .btn-logout:hover {
-            background-color: #e74c3c !important;
-            border-left-color: #e74c3c !important;
-        }
-
-        /* Estilos del contenedor de contenido principal */
-        .main-content {
-            margin-left: 260px; /* Deja el espacio para que no lo tape el menú */
-            padding: 40px;
-            width: calc(100% - 260px);
-            box-sizing: border-box;
-        }
-
-        .welcome-card {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            margin-bottom: 30px;
-        }
-
-        .welcome-card h1 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-        }
-
-        .welcome-card p {
-            color: #7f8c8d;
-            margin: 0;
-        }
-
-        /* Tarjetas informativas de acceso rápido */
-        .dashboard-grid {
+        /* ── Quick access cards ── */
+        .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+            gap: 18px; margin-bottom: 30px;
         }
-
         .card {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border-top: 4px solid #3498db;
+            background: var(--bg-card);
+            border-radius: 12px; padding: 24px 22px;
+            text-decoration: none; display: flex; flex-direction: column; gap: 8px;
+            box-shadow: var(--shadow-card);
+            border-top: 4px solid #22773c;
+            transition: transform .25s, box-shadow .25s;
         }
-
-        .card h4 {
-            margin: 0 0 10px 0;
-            color: #7f8c8d;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
-
-        .card p {
-            margin: 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,.13); }
+        .card-icon { font-size: 30px; line-height:1; }
+        .card h3 { font-family:'Nunito',sans-serif; font-size:16px; font-weight:800; color:var(--color-text); }
+        .card p   { font-size:13px; color:var(--color-muted); line-height:1.5; }
+        .card-arrow { margin-top:auto; font-size:12px; color:var(--color-muted); font-weight:700; }
+        .card.orange { border-top-color:#f39c12; }
+        .card.blue   { border-top-color:#3498db; }
+        .card.purple { border-top-color:#9b59b6; }
+        .card.teal   { border-top-color:#1abc9c; }
+        .card.red    { border-top-color:#e74c3c; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h3>Huellitas</h3>
-        </div>
-        
-        <div class="user-info">
-            <span>Bienvenido, <b><?= htmlspecialchars($nombre_usuario) ?></b></span>
-            <div class="rol"><?= htmlspecialchars($rol_usuario) ?></div>
+<?php $pagina_activa='dashboard'; include 'sidebar.php'; ?>
+
+<div class="main-content">
+    <?php include 'topbar.php'; ?>
+
+    <div class="page-body">
+        <div class="welcome-banner">
+            <h1>¡Hola, <?= htmlspecialchars($nombre_usuario) ?>! 👋</h1>
+            <p>Bienvenido al sistema de gestión de Clínica Veterinaria Huellitas.</p>
         </div>
 
-        <ul class="sidebar-menu">
-            <li><a href="dashboard.php">Inicio</a></li>
-            <li><a href="dueños.php">Dueños y Mascotas</a></li>
-            <li><a href="citas.php">Agenda / Citas</a></li>
-            <li><a href="consultas.php">Consultas Médicas</a></li>
-            <li><a href="vacunas.php">Carnet de Vacunación</a></li>
-            <li><a href="tratamientos.php">Tratamientos</a></li>
-            <li><a href="medicamentos.php">Catálogo Medicamentos</a></li>
-            <li><a href="reportes.php">Reportes y Estadísticas</a></li>
-            <li><a href="logout.php" class="btn-logout">Cerrar Sesión</a></li>
-        </ul>
+        <p class="section-label">Acceso Rápido</p>
+
+        <div class="cards-grid">
+            <a href="dueños.php" class="card">
+                <div class="card-icon">🐾</div>
+                <h3>Dueños y Mascotas</h3>
+                <p>Gestiona el directorio de clientes y sus mascotas.</p>
+                <div class="card-arrow">Ver directorio →</div>
+            </a>
+            <a href="citas.php" class="card orange">
+                <div class="card-icon">📅</div>
+                <h3>Agenda / Citas</h3>
+                <p>Consulta el calendario y las citas programadas.</p>
+                <div class="card-arrow">Ver agenda →</div>
+            </a>
+            <a href="consultas.php" class="card blue">
+                <div class="card-icon">🩺</div>
+                <h3>Historial Clínico</h3>
+                <p>Revisa y registra consultas médicas y diagnósticos.</p>
+                <div class="card-arrow">Ver historial →</div>
+            </a>
+            <a href="tratamientos.php" class="card purple">
+                <div class="card-icon">💊</div>
+                <h3>Tratamientos</h3>
+                <p>Administra los tratamientos activos y completados.</p>
+                <div class="card-arrow">Ver tratamientos →</div>
+            </a>
+            <a href="medicamentos.php" class="card teal">
+                <div class="card-icon">🧪</div>
+                <h3>Catálogo de Medicamentos</h3>
+                <p>Inventario de medicamentos disponibles en la clínica.</p>
+                <div class="card-arrow">Ver catálogo →</div>
+            </a>
+            <a href="reportes.php" class="card red">
+                <div class="card-icon">📊</div>
+                <h3>Reportes y Estadísticas</h3>
+                <p>Visualiza métricas e informes del desempeño.</p>
+                <div class="card-arrow">Ver reportes →</div>
+            </a>
+        </div>
     </div>
+</div>
 
-    <div class="main-content">
-        <div class="welcome-card">
-            <h1>Panel de Control</h1>
-            <p>Sistema de gestión clínica para el control de pacientes, historiales médicos y agendas de la veterinaria.</p>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="card" style="border-top-color: #22773c;">
-                <h4>Mascotas Activas</h4>
-                <p>Módulo de Pacientes</p>
-            </div>
-            <div class="card" style="border-top-color: #024e22;">
-                <h4>Citas para Hoy</h4>
-                <p>Calendario</p>
-            </div>
-            <div class="card" style="border-top-color: #01771b;">
-                <h4>Consultas Realizadas</h4>
-                <p>Historial Clínico</p>
-            </div>
-        </div>
-    </div>
-
+<script src="huellitas-shared.js"></script>
 </body>
 </html>
