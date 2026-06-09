@@ -33,8 +33,8 @@ $pagina_activa  = 'dueños';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dueños y Mascotas - Huellitas</title>
-    <link rel="stylesheet" href="huellitas-shared.css">
-    <link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4">
+    <link rel="stylesheet" href="huellitas-layout.css?v=4">
     <style>
         /* Layout 2 columnas */
         .split-layout {
@@ -88,7 +88,6 @@ $pagina_activa  = 'dueños';
         .pet-item:hover { background: var(--color-hover); border-color: var(--color-accent); }
         .pet-avatar {
             width: 42px; height: 42px; border-radius: 50%;
-            background: linear-gradient(135deg,#22773c,#3dba4e);
             display: flex; align-items: center; justify-content: center;
             font-size: 22px; flex-shrink: 0;
         }
@@ -127,11 +126,11 @@ $pagina_activa  = 'dueños';
 
         <div class="toolbar">
             <div class="search-box">
-                <span>🔍</span>
+                <span>&#128269;</span>
                 <input type="text" id="buscador" placeholder="Buscar por nombre, documento o mascota…" oninput="filtrarTabla()">
             </div>
             <a href="nuevo_dueño.php"  class="btn btn-primary">+ Añadir Dueño</a>
-            <a href="nueva_mascota.php" class="btn btn-orange">🐶 Nueva Mascota</a>
+            <a href="nueva_mascota.php" class="btn btn-orange">&#128054; Nueva Mascota</a>
         </div>
 
         <div class="split-layout">
@@ -160,7 +159,7 @@ $pagina_activa  = 'dueños';
                                         <?php foreach(explode('|',$d['lista_mascotas']) as $m):
                                             [$mid,$mnombre] = explode(':',$m,2);
                                             $mnombre = explode(':',$mnombre)[0]; ?>
-                                            <a href="perfil_mascota.php?id=<?= $mid ?>" class="mascota-tag">🐾 <?= htmlspecialchars($mnombre) ?></a>
+                                            <a href="perfil_mascota.php?id=<?= $mid ?>" class="mascota-tag">&#128062; <?= htmlspecialchars($mnombre) ?></a>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <em style="color:var(--color-muted)">Sin mascotas</em>
@@ -177,13 +176,13 @@ $pagina_activa  = 'dueños';
                                                 '<?= addslashes($d['telefono']) ?>',
                                                 '<?= addslashes($d['email']??'') ?>',
                                                 '<?= addslashes($d['direccion']??'') ?>'
-                                            )">✏️ Editar</button>
+                                            )">&#9999; Editar</button>
                                     </div>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="5"><div class="empty-state">🐾 No hay clientes aún.</div></td></tr>
+                            <tr><td colspan="5"><div class="empty-state">&#128062; No hay clientes aún.</div></td></tr>
                         <?php endif; ?>
                         </tbody>
                     </table>
@@ -192,7 +191,7 @@ $pagina_activa  = 'dueños';
 
             <!-- Panel mascotas -->
             <div class="pets-panel">
-                <h4>🐾 Mascotas registradas</h4>
+                <h4>&#128062; Mascotas registradas</h4>
                 <?php
                 $todas_mascotas = [];
                 foreach($lista_dueños as $d) {
@@ -207,11 +206,20 @@ $pagina_activa  = 'dueños';
                 }
                 ?>
                 <?php if(count($todas_mascotas)>0): ?>
-                    <?php foreach($todas_mascotas as $pm):
+                    <?php foreach($todas_mascotas as $index => $pm):
                         $emoji = str_contains(strtolower($pm['especie']),'gato')?'🐱':(str_contains(strtolower($pm['especie']),'perro')?'🐶':'🐾');
+                        
+                        // Generar variaciones de tonos azules para los fondos
+                        $blue_gradients = [
+                            'linear-gradient(135deg, #0c83a7, #34aed4)',
+                            'linear-gradient(135deg, #1f618d, #2980b9)',
+                            'linear-gradient(135deg, #095870, #138d75)',
+                            'linear-gradient(135deg, #2471a3, #5dade2)'
+                        ];
+                        $bg_grad = $blue_gradients[$index % 4];
                     ?>
                     <a href="perfil_mascota.php?id=<?= $pm['id'] ?>" class="pet-item">
-                        <div class="pet-avatar"><?= $emoji ?></div>
+                        <div class="pet-avatar" style="background: <?= $bg_grad ?>"><?= $emoji ?></div>
                         <div class="pet-info">
                             <div class="pet-name"><?= htmlspecialchars($pm['nombre']) ?></div>
                             <div class="pet-owner">Dueño: <?= htmlspecialchars($pm['dueño']) ?></div>
@@ -232,7 +240,7 @@ $pagina_activa  = 'dueños';
 <div class="modal-overlay" id="modalEditar">
     <div class="modal">
         <button class="modal-close" onclick="cerrarModal()">✕</button>
-        <h3>✏️ Editar Dueño</h3>
+        <h3>&#9999; Editar Dueño</h3>
         <form method="POST" action="editar_dueño.php">
             <input type="hidden" name="id_dueño" id="edit_id">
             <div class="form-group"><label>Documento</label><input type="text" name="documento" id="edit_doc" required></div>

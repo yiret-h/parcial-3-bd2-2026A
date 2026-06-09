@@ -7,53 +7,52 @@ $mensaje     = "";
 $lista_dueños = [];
 $lista_razas  = [];
 
-// 1. Cargar dueños
 try {
-    $stmt = $conexion->query("SELECT id_dueño, nombre, documento_identidad FROM dueño ORDER BY nombre ASC");
-    $lista_dueños = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    $mensaje = "<div class='alert error'>Error al cargar dueños: " . $e->getMessage() . "</div>";
+    // Obtener lista de dueños para el select
+    $lista_dueños = $conexion->query("SELECT id_dueño, documento_identidad, nombre FROM dueño ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Obtener lista de razas agrupadas o con el nombre de la especie
+    $lista_razas = $conexion->query(
+        "SELECT r.id_raza, r.nombre AS nombre_raza, e.nombre AS nombre_especie 
+         FROM raza r 
+         INNER JOIN especie e ON r.id_especie = e.id_especie 
+         ORDER BY e.nombre, r.nombre"
+    )->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $mensaje = "<div class='alert error'>Error al cargar datos: " . $e->getMessage() . "</div>";
 }
 
-// 2. Cargar razas con especie
-try {
-    $sql_razas = "SELECT r.id_raza, r.nombre AS nombre_raza, e.nombre AS nombre_especie
-                  FROM raza r INNER JOIN especie e ON r.id_especie = e.id_especie
-                  ORDER BY e.nombre ASC, r.nombre ASC";
-    $stmt = $conexion->query($sql_razas);
-    $lista_razas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    $mensaje = "<div class='alert error'>Error al cargar razas: " . $e->getMessage() . "</div>";
-}
-
-// ID preseleccionado si viene de dueños.php
-$id_dueño_pre = isset($_GET['id_dueño']) ? (int)$_GET['id_dueño'] : 0;
-
-// 3. Procesar formulario
+// Procesar formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id_dueño_f      = (int)$_POST['id_dueño'];
-    $nombre_mascota  = trim($_POST['nombre']);
-    $id_raza         = (int)$_POST['id_raza'];
-    $sexo            = $_POST['sexo'];
+    $id_dueño_f       = (int)$_POST['id_dueño'];
+    $nombre_mascota   = trim($_POST['nombre']);
+    $id_raza          = (int)$_POST['id_raza'];
+    $sexo             = $_POST['sexo'];
     $fecha_nacimiento = !empty($_POST['fecha_nacimiento']) ? $_POST['fecha_nacimiento'] : null;
 
     try {
-        $sql = "INSERT INTO mascota (nombre, id_raza, sexo, fecha_nacimiento, id_dueño)
-                VALUES (:nombre, :id_raza, :sexo, :fecha_nac, :id_dueño)";
+        $sql = "INSERT INTO mascota (nombre, id_raza, sexo, fecha_nacimiento, id_dueño) 
+                VALUES (:nombre, :id_raza, :sexo, :fecha_nac, :id_dueno)";
+        
         $stmt = $conexion->prepare($sql);
         $stmt->execute([
             ':nombre'    => $nombre_mascota,
             ':id_raza'   => $id_raza,
             ':sexo'      => $sexo,
             ':fecha_nac' => $fecha_nacimiento,
-            ':id_dueño'  => $id_dueño_f,
+            ':id_dueno'  => $id_dueño_f
         ]);
+        
         header("Location: dueños.php");
         exit();
     } catch(PDOException $e) {
         $mensaje = "<div class='alert error'>Error al guardar: " . $e->getMessage() . "</div>";
     }
 }
+
+// ID preseleccionado si viene de dueños.php
+$id_dueño_pre = isset($_GET['id_dueño']) ? (int)$_GET['id_dueño'] : 0;
+
 
 $nombre_usuario = $_SESSION['usuario'];
 $rol_usuario    = $_SESSION['rol'];
@@ -66,8 +65,8 @@ $pagina_activa  = 'dueños';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Mascota - Huellitas</title>
-    <link rel="stylesheet" href="huellitas-shared.css">
-    <link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4">
+    <link rel="stylesheet" href="huellitas-layout.css?v=4">
     <style>
         .page-body { padding: 35px 40px; }
         .form-card { border-radius: 12px; padding: 35px; max-width: 580px; margin: 0 auto; }
@@ -77,8 +76,8 @@ $pagina_activa  = 'dueños';
         .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 2px solid var(--color-border); border-radius: 8px; font-size: 14px; outline: none; transition: border-color .2s; }
         .btn-row { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; cursor: pointer; border: none; transition: all .2s; flex: 1; }
-        .btn-primary { background: #22773c; color: #fff; }
-        .btn-primary:hover { background: #024e22; }
+        .btn-primary { background: #0c83a7; color: #fff; }
+        .btn-primary:hover { background: #085e79; }
         .btn-secondary { background: #ecf0f1; color: #555; }
         .btn-secondary:hover { background: #bdc3c7; }
         .btn-orange { background: #f39c12; color: #fff; }
@@ -97,7 +96,7 @@ $pagina_activa  = 'dueños';
     <div class="page-body">
         <?= $mensaje ?>
         <div class="form-card">
-            <h3>🐶 Datos de la Nueva Mascota</h3>
+            <h3>&#128054; Datos de la Nueva Mascota</h3>
             <form method="POST" action="">
                 <div class="form-group">
                     <label>Dueño</label>
@@ -134,10 +133,9 @@ $pagina_activa  = 'dueños';
                     <label>Fecha de Nacimiento (Aproximada)</label>
                     <input type="date" name="fecha_nacimiento">
                 </div>
-                <div class="btn-row">
-                    <button type="submit" class="btn btn-primary">💾 Guardar Mascota</button>
-                    <a href="nuevo_dueño.php" class="btn btn-orange">👤 Nuevo Dueño</a>
-                    <a href="dueños.php" class="btn btn-secondary">← Volver</a>
+                <div class="btn-row" style="justify-content: space-between;">
+                    <a href="dueños.php" class="btn btn-secondary" style="flex:0.3; text-align:center;">← Volver</a>
+                    <button type="submit" class="btn btn-primary" style="flex:0.6; background:#0c83a7; color:white; border:none; text-align:center;">&#10004; Finalizar</button>
                 </div>
             </form>
         </div>

@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         $sql = "INSERT INTO tratamiento (id_consulta, descripcion, duracion_dias) VALUES (:id_c, :desc, :dias)";
         $stmt = $conexion->prepare($sql);
         $stmt->execute([':id_c'=>(int)$_POST['id_consulta'], ':desc'=>trim($_POST['descripcion']), ':dias'=>(int)$_POST['duracion_dias']]);
-        $mensaje = "<div class='alert success'>✅ Tratamiento registrado correctamente.</div>";
+        $mensaje = "<div class='alert success'>&#9989; Tratamiento registrado correctamente.</div>";
     } catch(PDOException $e) {
         $mensaje = "<div class='alert error'>Error: " . $e->getMessage() . "</div>";
     }
@@ -61,8 +61,8 @@ $pagina_activa  = 'tratamientos';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tratamientos - Huellitas</title>
-    <link rel="stylesheet" href="huellitas-shared.css">
-    <link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4">
+    <link rel="stylesheet" href="huellitas-layout.css?v=4">
     <style>
         .page-body { padding:30px 40px; }
         .layout { display:grid; grid-template-columns:360px 1fr; gap:24px; align-items:start; }
@@ -109,7 +109,7 @@ $pagina_activa  = 'tratamientos';
         <?= $mensaje ?>
         <div class="layout">
             <div class="form-card">
-                <h4>💊 Registrar Tratamiento</h4>
+                <h4>&#128138; Registrar Tratamiento</h4>
                 <form method="POST">
                     <input type="hidden" name="accion" value="crear">
                     <div class="form-group">
@@ -131,14 +131,14 @@ $pagina_activa  = 'tratamientos';
                         <label>Duración (días)</label>
                         <input type="number" name="duracion_dias" min="1" max="365" required>
                     </div>
-                    <button type="submit" class="btn-submit">💾 Guardar Tratamiento</button>
+                    <button type="submit" class="btn-submit">&#128190; Guardar Tratamiento</button>
                 </form>
             </div>
 
             <div>
                 <div class="toolbar">
                     <div class="search-box">
-                        <span>🔍</span>
+                        <span>&#128269;</span>
                         <input type="text" id="buscador" placeholder="Buscar paciente, diagnóstico…" oninput="filtrar()">
                     </div>
                 </div>
@@ -152,7 +152,7 @@ $pagina_activa  = 'tratamientos';
                     <div class="trat-card <?= $estado === 'Completado' ? 'completado' : '' ?>"
                          data-buscar="<?= strtolower($t['nombre_mascota'].' '.$t['nombre_dueño'].' '.$t['diagnostico'].' '.$t['descripcion']) ?>">
                         <div>
-                            <h5>🐾 <?= htmlspecialchars($t['nombre_mascota']) ?>
+                            <h5>&#128062; <?= htmlspecialchars($t['nombre_mascota']) ?>
                                 <span style="font-size:12px;color:var(--color-muted);font-weight:400;">/ <?= htmlspecialchars($t['nombre_dueño']) ?></span>
                             </h5>
                             <div class="trat-meta">Consulta: <?= date('d/m/Y', strtotime($t['fecha_consulta'])) ?> — <?= htmlspecialchars(substr($t['diagnostico'],0,50)) ?>…</div>
@@ -161,16 +161,16 @@ $pagina_activa  = 'tratamientos';
                                 <div class="progress-fill <?= $estado==='Completado'?'done':'' ?>" style="width:<?= $pct ?>%"></div>
                             </div>
                             <?php if($estado === 'Activo'): ?>
-                                <div class="dias-left">⏳ <?= $restantes ?> día(s) restantes</div>
+                                <div class="dias-left">&#9203; <?= $restantes ?> día(s) restantes</div>
                             <?php else: ?>
-                                <div class="dias-left" style="color:var(--color-muted);">✅ Completado</div>
+                                <div class="dias-left" style="color:var(--color-muted);">&#9989; Completado</div>
                             <?php endif; ?>
                         </div>
                         <span class="badge badge-<?= strtolower($estado) ?>"><?= $estado ?></span>
                     </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="empty-msg">💊 No hay tratamientos registrados aún.</div>
+                    <div class="empty-msg">&#128138; No hay tratamientos registrados aún.</div>
                 <?php endif; ?>
             </div>
         </div>

@@ -35,8 +35,8 @@ $pagina_activa  = 'vacunas';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carnet de Vacunación - Huellitas</title>
-    <link rel="stylesheet" href="huellitas-shared.css">
-    <link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4">
+    <link rel="stylesheet" href="huellitas-layout.css?v=4">
     <style>
         .page-body { padding: 40px; }
         .page-header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 30px; gap: 10px; }
@@ -67,7 +67,7 @@ $pagina_activa  = 'vacunas';
     <div class="page-body">
         <div class="page-header">
             <a href="nueva_vacuna.php" class="btn-nuevo">+ Registrar Vacuna</a>
-            <button onclick="window.print()" class="btn-pdf">📄 Descargar PDF</button>
+            <button onclick="window.print()" class="btn-pdf">&#128196; Descargar PDF</button>
         </div>
         
         <?php if(!empty($error_db)): ?>

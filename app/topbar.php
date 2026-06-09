@@ -37,7 +37,7 @@ $inicial        = strtoupper(substr($nombre_usuario, 0, 1));
 
             <!-- Cerrar sesión -->
             <a href="logout.php" class="dropdown-item logout-item">
-                <span class="di-icon">🚪</span> Cerrar sesión
+                <span class="di-icon">&#128682;</span> Cerrar sesión
             </a>
         </div>
     </div>

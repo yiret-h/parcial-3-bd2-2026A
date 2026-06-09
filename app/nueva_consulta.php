@@ -23,7 +23,8 @@ $lista_veterinarios = $conexion->query("SELECT id_veterinario, nombre FROM veter
 
 // 3. Cargar Catálogo de Vacunas
 $lista_vacunas = $conexion->query("SELECT id_vacuna, nombre FROM vacuna ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
-
+// ... después de cargar vacunas ($lista_vacunas), añade esto:
+$lista_meds = $conexion->query("SELECT id_medicamento, nombre FROM medicamento")->fetchAll(PDO::FETCH_ASSOC);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tipo_ingreso = $_POST['tipo_ingreso'];
     $fecha = $_POST['fecha'];
@@ -52,14 +53,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql_c = "INSERT INTO consulta (fecha, motivo, diagnostico, observaciones, id_mascota, id_veterinario) VALUES (:f, :m, :d, :o, :id_m, :id_v)";
         $stmt_c = $conexion->prepare($sql_c);
         $stmt_c->execute([':f'=>$fecha, ':m'=>$motivo, ':d'=>$diagnostico, ':o'=>$observaciones, ':id_m'=>$id_mascota, ':id_v'=>$id_veterinario]);
+        $id_consulta = $conexion->lastInsertId();
 
-        // B. Si venía de una cita, actualizar su estado a Completada
+        // B. Guardar Tratamiento y Medicamentos si se proporcionó descripción
+        $tratamiento_desc = trim($_POST['tratamiento_desc'] ?? '');
+        $tratamiento_dias = (int)($_POST['tratamiento_dias'] ?? 1);
+        
+        if (!empty($tratamiento_desc)) {
+            $sql_t = "INSERT INTO tratamiento (id_consulta, descripcion, duracion_dias) VALUES (:id_c, :desc, :dias)";
+            $stmt_t = $conexion->prepare($sql_t);
+            $stmt_t->execute([':id_c' => $id_consulta, ':desc' => $tratamiento_desc, ':dias' => $tratamiento_dias]);
+            $id_tratamiento = $conexion->lastInsertId();
+            
+            // Si hay medicamentos seleccionados
+            if (!empty($_POST['medicamentos']) && is_array($_POST['medicamentos'])) {
+                $sql_dt = "INSERT INTO detalle_tratamiento (id_tratamiento, id_medicamento) VALUES (?, ?)";
+                $stmt_dt = $conexion->prepare($sql_dt);
+                
+                // Opcional: Descontar stock
+                $sql_stock = "UPDATE medicamento SET stock = stock - 1 WHERE id_medicamento = ? AND stock > 0";
+                $stmt_stock = $conexion->prepare($sql_stock);
+
+                foreach ($_POST['medicamentos'] as $id_med) {
+                    $stmt_dt->execute([$id_tratamiento, $id_med]);
+                    $stmt_stock->execute([$id_med]);
+                }
+            }
+        }
+
+        // C. Si venía de una cita, actualizar su estado a Completada
         if ($id_cita_completar) {
             $stmt_upd = $conexion->prepare("UPDATE cita SET estado = 'Completada' WHERE id_cita = ?");
             $stmt_upd->execute([$id_cita_completar]);
         }
 
-        // C. Si el doctor aplicó vacuna, registrarla en el carnet
+        // D. Si el doctor aplicó vacuna, registrarla en el carnet
         if (isset($_POST['aplico_vacuna']) && $_POST['aplico_vacuna'] == 'SI' && !empty($_POST['id_vacuna'])) {
             $id_vacuna = $_POST['id_vacuna'];
             $prox_dosis = !empty($_POST['proxima_dosis']) ? $_POST['proxima_dosis'] : null;
@@ -88,7 +116,7 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link rel="stylesheet" href="huellitas-shared.css"><link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4"><link rel="stylesheet" href="huellitas-layout.css?v=4">
     <style>
         .page-body { padding: 35px 40px; }
         .form-card { border-radius: 12px; padding: 35px; max-width: 750px; margin: 0 auto; background: var(--bg-card); }
@@ -115,6 +143,10 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
         .select2-dropdown { background: var(--bg-card); border: 2px solid var(--color-border); }
         .select2-search__field { background: var(--input-bg); color: var(--color-text); }
         .select2-results__option { color: var(--color-text); }
+        .select2-container--default .select2-selection--multiple { background: var(--input-bg); border: 2px solid var(--color-border); border-radius: 8px; min-height: 40px; }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice { background: #34495e; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; margin-top: 6px; }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove { color: #fff; margin-right: 5px; cursor: pointer; font-weight: bold; border: none; }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover { color: #f39c12; background: transparent; }
     </style>
 </head>
 <body>
@@ -124,7 +156,7 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
     <div class="page-body">
         <?= $mensaje ?>
         <div class="form-card">
-            <h3>🩺 Registro de Consulta Médica</h3>
+            <h3>&#129658; Registro de Consulta Médica</h3>
             
             <form method="POST">
                 
@@ -144,7 +176,7 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
                 </div>
 
                 <div id="bloque-normal" class="seccion-dinamica seccion-normal activa">
-                    <h4 style="margin-bottom:15px; color:#22773c;">✅ Seleccionar paciente en sala de espera</h4>
+                    <h4 style="margin-bottom:15px; color:#22773c;">&#9989; Seleccionar paciente en sala de espera</h4>
                     <div class="form-group">
                         <label>Selecciona la Cita:</label>
                         <select name="cita_seleccionada" id="select-citas" class="buscador-select" style="width:100%" onchange="autocompletarMotivo()">
@@ -166,7 +198,7 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
                 </div>
 
                 <div id="bloque-urgencia" class="seccion-dinamica seccion-urgencia">
-                    <h4 style="margin-bottom:15px; color:#e74c3c;">🚨 Ingreso por Urgencias</h4>
+                    <h4 style="margin-bottom:15px; color:#e74c3c;">&#128680; Ingreso por Urgencias</h4>
                     <div class="form-group">
                         <label>Paciente:</label>
                         <select name="id_mascota_urgencia" class="buscador-select" style="width:100%">
@@ -217,14 +249,36 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label>Fecha del próximo refuerzo (Opcional):</label>
-                            <input type="date" name="proxima_dosis">
+                            <label>Fecha y Hora del próximo refuerzo (Opcional):</label>
+                            <input type="datetime-local" name="proxima_dosis">
                         </div>
                     </div>
                 </div>
+<div class="vacuna-box" style="border-color: #9b59b6; background: rgba(155, 89, 182, 0.1);">
+    <h4 style="color:#9b59b6; margin-bottom:15px;">&#128138; Tratamiento y Medicación</h4>
+    
+    <div class="form-group">
+        <label>Tratamiento / Plan de acción:</label>
+        <textarea name="tratamiento_desc" placeholder="Describa el tratamiento a seguir..."></textarea>
+    </div>
 
+    <div class="form-group">
+        <label>Duración (días):</label>
+        <input type="number" name="tratamiento_dias" value="1" min="1">
+    </div>
+
+    <div class="form-group">
+        <label>Medicamentos necesarios (Selección múltiple):</label>
+        <select name="medicamentos[]" class="buscador-select" multiple style="width:100%">
+            <?php foreach($lista_meds as $med): ?>
+                <option value="<?= $med['id_medicamento'] ?>"><?= htmlspecialchars($med['nombre']) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <small style="color:var(--color-muted);">* Mantén presionada la tecla Ctrl para seleccionar varios.</small>
+    </div>
+</div>
                 <div style="margin-top: 25px;">
-                    <button type="submit" class="btn-submit">💾 Guardar Historial Clínico</button>
+                    <button type="submit" class="btn-submit">&#128190; Guardar Historial Clínico</button>
                     <a href="consultas.php" style="display:block; text-align:center; color:var(--color-text); font-weight:bold; text-decoration:none; margin-top:10px;">Cancelar</a>
                 </div>
             </form>

@@ -17,8 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 VALUES (:doc, :nombre, :telefono, :email, :direccion)";
         $stmt = $conexion->prepare($sql);
         $stmt->execute([':doc'=>$documento, ':nombre'=>$nombre, ':telefono'=>$telefono, ':email'=>$email, ':direccion'=>$direccion]);
-
-        header("Location: dueños.php");
+        $id_nuevo_dueño = $conexion->lastInsertId();
+        header("Location: nueva_mascota.php?id_dueño=" . $id_nuevo_dueño);
         exit();
     } catch(PDOException $e) {
         if ($e->getCode() == 23000) {
@@ -40,8 +40,8 @@ $pagina_activa  = 'dueños';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nuevo Dueño - Huellitas</title>
-    <link rel="stylesheet" href="huellitas-shared.css">
-    <link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4">
+    <link rel="stylesheet" href="huellitas-layout.css?v=4">
     <style>
         .page-body { padding: 35px 40px; }
         .form-card { border-radius: 12px; padding: 35px; max-width: 580px; margin: 0 auto; }
@@ -71,7 +71,7 @@ $pagina_activa  = 'dueños';
     <div class="page-body">
         <?= $mensaje ?>
         <div class="form-card">
-            <h3>👤 Datos del Nuevo Dueño</h3>
+            <h3>&#128100; Datos del Nuevo Dueño</h3>
             <form method="POST" action="">
                 <div class="form-group">
                     <label>Documento de Identidad</label>
@@ -93,10 +93,9 @@ $pagina_activa  = 'dueños';
                     <label>Dirección (Opcional)</label>
                     <input type="text" name="direccion" autocomplete="off" placeholder="Ej: Calle 45 # 12-30">
                 </div>
-                <div class="btn-row">
-                    <button type="submit" class="btn btn-primary">💾 Guardar Dueño</button>
-                    <a href="nueva_mascota.php" class="btn btn-orange">🐶 Nueva Mascota</a>
-                    <a href="dueños.php" class="btn btn-secondary">← Volver</a>
+                <div class="btn-row" style="justify-content: space-between;">
+                    <a href="dueños.php" class="btn btn-secondary" style="flex:0.3; text-align:center;">← Volver</a>
+                    <button type="submit" class="btn btn-primary" style="flex:0.6; background:#0c83a7; color:white; border:none; text-align:center;">Continuar (Agregar Mascota) →</button>
                 </div>
             </form>
         </div>

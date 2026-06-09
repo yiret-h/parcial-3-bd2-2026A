@@ -1,41 +1,43 @@
 /* ═══════════════════════════════════════════════
    huellitas-shared.css  –  Dark mode + User menu
    ═══════════════════════════════════════════════ */
-
-/* ── Variables: modo día (por defecto) ── */
+/* ── Variables: modo día (Tono Azul #0c83a7) ── */
 :root {
-    --bg-main:        #f0f4f1;
-    --bg-sidebar:     linear-gradient(180deg,#043a07 0%,#006805 60%,#0a7a0f 100%);
+    /* Un gradiente suave de azul clarito con un sutil patrón de puntos */
+    --bg-main: radial-gradient(rgba(12, 131, 167, 0.08) 2px, transparent 2px), linear-gradient(135deg, #f0f4f8 0%, #d9e4eb 100%);
+    background-size: 30px 30px, 100% 100%;
+    /* ... deja el resto de tus variables iguales ... */
+    --bg-sidebar:     linear-gradient(180deg, #064a5f 0%, #0c83a7 60%, #096a87 100%);
     --bg-card:        #ffffff;
     --bg-topbar:      #ffffff;
     --color-text:     #2c3e50;
     --color-muted:    #7f8c8d;
-    --color-border:   #d5e5d5;
-    --color-hover:    #f0faf2;
-    --color-accent:   #22773c;
+    --color-border:   #d5e1e5;
+    --color-hover:    #f0f8fa;
+    --color-accent:   #0c83a7; /* Tu color principal */
     --shadow-card:    0 4px 14px rgba(0,0,0,0.06);
     --shadow-topbar:  0 2px 8px rgba(0,0,0,0.06);
-    --table-header:   #22773c;
-    --table-stripe:   #f9fbf9;
+    --table-header:   #0c83a7;
+    --table-stripe:   #f4f9fb;
     --input-bg:       #ffffff;
 }
 
-/* ── Variables: modo noche ── */
+/* ── Variables: modo noche (Tonos Azul Profundo) ── */
 body.dark-mode {
-    --bg-main:        #0f1b12;
-    --bg-sidebar:     linear-gradient(180deg,#010e02 0%,#031a05 60%,#042207 100%);
-    --bg-card:        #1a2b1d;
-    --bg-topbar:      #142017;
-    --color-text:     #d4edda;
-    --color-muted:    #7a9e80;
-    --color-border:   #2a4030;
-    --color-hover:    #1e3324;
-    --color-accent:   #4caf6a;
+    --bg-main:        #0d1418;
+    --bg-sidebar:     linear-gradient(180deg, #031c26 0%, #063c52 60%, #042938 100%);
+    --bg-card:        #152026;
+    --bg-topbar:      #111a1f;
+    --color-text:     #d4eaf5;
+    --color-muted:    #7a939e;
+    --color-border:   #233842;
+    --color-hover:    #1a2d36;
+    --color-accent:   #34aed4; /* Un azul más claro para resaltar en la oscuridad */
     --shadow-card:    0 4px 20px rgba(0,0,0,0.4);
     --shadow-topbar:  0 2px 12px rgba(0,0,0,0.5);
-    --table-header:   #1e4d2b;
-    --table-stripe:   #1e2e21;
-    --input-bg:       #1a2b1d;
+    --table-header:   #095870;
+    --table-stripe:   #19272e;
+    --input-bg:       #152026;
 }
 
 /* Aplicar variables globales */
@@ -127,7 +129,7 @@ body.dark-mode .fecha-grupo h5 { border-color: #2a4030; color: #7a9e80; }
 
 .user-avatar {
     width: 38px; height: 38px;
-    background: linear-gradient(135deg,#006805,#3d8d58);
+    background: linear-gradient(135deg, #0c83a7, #34aed4); /* Gradiente azul */
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     color: white;
@@ -232,13 +234,16 @@ body.dark-mode .toggle-switch::after { transform: translateX(16px); }
 .dropdown-item.logout-item { color: #e25e50; }
 .dropdown-item.logout-item:hover { background: #fadbd8; }
 
+/* Color del interruptor en modo noche */
+body.dark-mode .toggle-switch { background: #34aed4; }
+
 /* ── Corrección de contraste para etiquetas en modo oscuro ── */
 body.dark-mode .mascota-tag {
-    background-color: #1e4d2b !important; /* Un fondo verde mucho más oscuro */
-    color: #d4edda !important;           /* Texto claro para que resalte */
-    border-color: #243d2b !important;    /* Borde sutil oscuro */
+    background-color: #095870 !important; 
+    color: #d4eaf5 !important;           
+    border-color: #1a3c4a !important;    
 }
 
 body.dark-mode .mascota-tag:hover {
-    background-color: #2c944b !important; /* Brillo ligero al pasar el mouse */
+    background-color: #0c83a7 !important; 
 }

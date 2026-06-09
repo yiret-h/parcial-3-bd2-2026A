@@ -1,4 +1,7 @@
 <?php
+// Script to overwrite perfil_mascota.php with the fixed layout, colors, functional photo gallery and print templates.
+$code = <<<'PHP'
+<?php
 session_start();
 if (!isset($_SESSION['usuario'])) { header("Location: index.php"); exit(); }
 require_once 'config/conexion.php';
@@ -28,17 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto'])) {
         $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
         $filename = $id_mascota . '_' . time() . '.' . $ext;
         move_uploaded_file($_FILES['foto']['tmp_name'], $dir . $filename);
-    }
-    header("Location: perfil_mascota.php?id=$id_mascota");
-    exit();
-}
-
-// Eliminar foto
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_foto'])) {
-    $foto_to_delete = basename($_POST['delete_foto']);
-    $file_path = "imagenes/mascotas/" . $foto_to_delete;
-    if (strpos($foto_to_delete, $id_mascota . "_") === 0 && file_exists($file_path)) {
-        unlink($file_path);
     }
     header("Location: perfil_mascota.php?id=$id_mascota");
     exit();
@@ -82,7 +74,6 @@ if (!empty($mascota['fecha_nacimiento'])) {
 $fotos = glob("imagenes/mascotas/{$id_mascota}_*.*");
 if (!$fotos) $fotos = [];
 
-$fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $fotos);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -108,18 +99,8 @@ $fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $foto
             position:relative;
             overflow:hidden;
         }
-        .perfil-hero::after, .perfil-hero::before {
-            content: '';
-            position: absolute;
-            background-image: url('imagenes/paw_logo.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            opacity: 0.12;
-            z-index: 0;
-        }
-        .perfil-hero::after { right: 20px; top: -15px; width: 140px; height: 140px; transform: rotate(15deg); }
-        .perfil-hero::before { right: 100px; top: 30px; width: 90px; height: 90px; transform: rotate(30deg); }
-        .avatar-mascota { width:80px; height:80px; background:rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:44px; flex-shrink:0; position:relative; z-index:1; }
+        .perfil-hero::after { content:'🐾'; position:absolute; right:24px; font-size:90px; opacity:.12; top:50%; transform:translateY(-50%); }
+        .avatar-mascota { width:80px; height:80px; background:rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:44px; flex-shrink:0; }
         .perfil-info h1 { font-family:'Nunito',sans-serif; font-size:28px; font-weight:800; }
         .perfil-info .meta { display:flex; gap:16px; margin-top:6px; flex-wrap:wrap; }
         .perfil-info .meta span { font-size:13px; opacity:.9; background:rgba(0,0,0,.15); padding:3px 10px; border-radius:10px; }
@@ -138,9 +119,6 @@ $fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $foto
 
         /* Mini Album */
         .mini-album-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:10px; margin-top:10px;}
-        .album-photo-container { position: relative; width: 100%; aspect-ratio: 1; transition:transform 0.2s; cursor:pointer; }
-        .album-photo-container:hover { transform:scale(1.05); }
-        .album-photo-img { width:100%; height:100%; border-radius:10px; background-size:cover; background-position:center; }
         .album-photo { width:100%; aspect-ratio: 1; background:rgba(12,131,167,0.1); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:30px; border:2px dashed #0c83a7; color:#0c83a7; cursor:pointer; transition:transform 0.2s;}
         .album-photo:hover { transform:scale(1.05); background:rgba(12,131,167,0.2); }
         
@@ -156,13 +134,6 @@ $fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $foto
         .fecha-prox { color:#d35400; font-weight:700; background:#fdebd0; padding:3px 8px; border-radius:5px; font-size:12px; }
         .empty-msg { color:var(--color-muted); font-size:13px; text-align:center; padding:20px; }
         
-        body.dark-mode .album-photo { border-color: var(--color-accent); color: var(--color-accent); background: rgba(52, 174, 212, 0.1); }
-        body.dark-mode .album-photo:hover { background: rgba(52, 174, 212, 0.2); }
-        body.dark-mode .perfil-hero { background: linear-gradient(135deg, #095870 0%, #0c83a7 100%); }
-        body.dark-mode .badge-Pendiente { background: #4a3607; color: #fce392; }
-        body.dark-mode .badge-Completada { background: #133a1e; color: #a2e0b1; }
-        body.dark-mode .fecha-prox { background: #4a2006; color: #eebb99; }
-
         .btn-print { background:#f39c12; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:5px;}
         .btn-print:hover { background:#d68910; }
 
@@ -202,13 +173,6 @@ $fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $foto
         <div class="print-header">
             <h1>Huellitas - Clínica Veterinaria</h1>
             <p>Reporte Oficial del Paciente</p>
-        </div>
-
-        <!-- Botón Volver -->
-        <div style="margin-bottom: 20px;">
-            <a href="dueños.php" style="background: var(--bg-card); border: 1px solid var(--color-border); padding: 8px 16px; border-radius: 8px; text-decoration: none; color: var(--color-text); font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s;">
-                <span style="font-size: 16px;">←</span> Volver al Directorio
-            </a>
         </div>
 
         <!-- Hero -->
@@ -255,14 +219,10 @@ $fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $foto
             <div class="section-card">
                 <h4>📸 Mini Álbum</h4>
                 <div class="mini-album-grid">
-                    <?php foreach($fotos_js as $index => $foto_url): ?>
-                        <div class="album-photo-container">
-                            <div class="album-photo-img" onclick="openLightbox(<?= $index ?>)" style="background-image:url('<?= htmlspecialchars($foto_url) ?>');"></div>
-                            <form method="POST" style="position: absolute; top: 4px; right: 4px; margin: 0; padding: 0;">
-                                <input type="hidden" name="delete_foto" value="<?= htmlspecialchars(basename($foto_url)) ?>">
-                                <button type="submit" onclick="return confirm('¿Estás seguro de que deseas eliminar esta foto?');" style="background: rgba(231,76,60,0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);" title="Eliminar foto">✕</button>
-                            </form>
-                        </div>
+                    <?php foreach($fotos as $foto): 
+                        $foto_url = str_replace('\\', '/', $foto);
+                    ?>
+                        <div class="album-photo" style="background-image:url('<?= htmlspecialchars($foto_url) ?>'); background-size:cover; background-position:center; border:none; padding:0;"></div>
                     <?php endforeach; ?>
                     <?php if(count($fotos) == 0): ?>
                         <div class="album-photo" title="Foto inicial"><?= $mascota['nombre_especie'] === 'Gato' ? '🐱' : ($mascota['nombre_especie'] === 'Perro' ? '🐶' : '🐾') ?></div>
@@ -302,7 +262,7 @@ $fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $foto
             <div class="section-card full card-vacunas">
                 <h4>
                     <span>💉 Carnet de Vacunación</span>
-                    <a href="imprimir_carnet.php?id=<?= $id_mascota ?>" target="_blank" class="btn-print" style="text-decoration:none;">🖨️ Imprimir Carnet (Nuevo Diseño)</a>
+                    <button class="btn-print" onclick="imprimirSeccion('vacunas')">🖨️ Imprimir Carnet</button>
                 </h4>
                 <?php if(count($vacunas) > 0): ?>
                 <table class="mini-table">
@@ -357,51 +317,7 @@ $fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $foto
         </div>
     </div>
 </div>
-
-<!-- Lightbox Modal para el Mini Álbum -->
-<div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,20,30,0.85); backdrop-filter: blur(5px); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
-    <div style="position: relative; max-width: 90%; display: flex; align-items: center; justify-content: center;">
-        <button onclick="prevImage(event)" style="position: absolute; left: 10px; background: rgba(0,0,0,0.6); border: none; color: white; font-size: 24px; cursor: pointer; z-index: 10000; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'">&#10094;</button>
-        <img id="lightbox-img" src="" style="max-width:100%; max-height:85vh; border-radius:12px; box-shadow:0 15px 40px rgba(0,0,0,0.5); border: 3px solid white; cursor: pointer;" onclick="document.getElementById('lightbox').style.display='none'">
-        <button onclick="nextImage(event)" style="position: absolute; right: 10px; background: rgba(0,0,0,0.6); border: none; color: white; font-size: 24px; cursor: pointer; z-index: 10000; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'">&#10095;</button>
-    </div>
-    <p style="color: white; font-family: 'Nunito', sans-serif; margin-top: 15px; font-weight: 800; opacity: 0.8; cursor: pointer;" onclick="document.getElementById('lightbox').style.display='none'">Haz clic en la imagen o en el fondo para cerrar</p>
-</div>
-
 <script>
-const fotosAlbum = <?= json_encode($fotos_js ?? []) ?>;
-let currentIndex = 0;
-
-function openLightbox(index) {
-    if (fotosAlbum.length === 0) return;
-    currentIndex = index;
-    updateLightboxImage();
-    document.getElementById('lightbox').style.display = 'flex';
-}
-
-function updateLightboxImage() {
-    document.getElementById('lightbox-img').src = fotosAlbum[currentIndex];
-}
-
-function prevImage(e) {
-    e.stopPropagation();
-    currentIndex = (currentIndex > 0) ? currentIndex - 1 : fotosAlbum.length - 1;
-    updateLightboxImage();
-}
-
-function nextImage(e) {
-    e.stopPropagation();
-    currentIndex = (currentIndex < fotosAlbum.length - 1) ? currentIndex + 1 : 0;
-    updateLightboxImage();
-}
-
-// Cerrar haciendo clic en el fondo
-document.getElementById('lightbox').addEventListener('click', function(e) {
-    if (e.target === this) {
-        this.style.display = 'none';
-    }
-});
-
 function imprimirSeccion(tipo) {
     // tipo puede ser 'vacunas' o 'consultas'
     document.body.classList.add('print-' + tipo);
@@ -409,6 +325,8 @@ function imprimirSeccion(tipo) {
     document.body.classList.remove('print-' + tipo);
 }
 </script>
-<script src="huellitas-shared.js"></script>
 </body>
 </html>
+PHP;
+file_put_contents(__DIR__ . '/../perfil_mascota.php', $code);
+echo "Done";

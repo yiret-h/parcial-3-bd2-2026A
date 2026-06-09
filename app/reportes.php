@@ -114,8 +114,8 @@ $meses_labels_fmt = array_map(function($m) use($meses_nombres) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes - Huellitas</title>
-    <link rel="stylesheet" href="huellitas-shared.css">
-    <link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4">
+    <link rel="stylesheet" href="huellitas-layout.css?v=4">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         /* ── KPI cards ── */
@@ -248,34 +248,34 @@ $meses_labels_fmt = array_map(function($m) use($meses_nombres) {
         <!-- ── KPIs ── -->
         <div class="kpi-grid">
             <div class="kpi-card">
-                <div class="kpi-icon">👤</div>
+                <div class="kpi-icon">&#128100;</div>
                 <div class="kpi-value"><?= $stats['total_dueños'] ?></div>
                 <div class="kpi-label">Clientes registrados</div>
             </div>
             <div class="kpi-card teal">
-                <div class="kpi-icon">🐾</div>
+                <div class="kpi-icon">&#128062;</div>
                 <div class="kpi-value"><?= $stats['total_mascotas'] ?></div>
                 <div class="kpi-label">Mascotas registradas</div>
             </div>
             <div class="kpi-card blue">
-                <div class="kpi-icon">🩺</div>
+                <div class="kpi-icon">&#129658;</div>
                 <div class="kpi-value"><?= $stats['total_consultas'] ?></div>
                 <div class="kpi-label">Consultas totales</div>
                 <div class="kpi-sub">+<?= $stats['consultas_mes'] ?> este mes</div>
             </div>
             <div class="kpi-card orange">
-                <div class="kpi-icon">📅</div>
+                <div class="kpi-icon">&#128197;</div>
                 <div class="kpi-value"><?= $stats['citas_pendientes'] ?></div>
                 <div class="kpi-label">Citas pendientes</div>
                 <div class="kpi-sub"><?= $stats['citas_mes'] ?> agendadas este mes</div>
             </div>
             <div class="kpi-card purple">
-                <div class="kpi-icon">💉</div>
+                <div class="kpi-icon">&#128137;</div>
                 <div class="kpi-value"><?= $stats['vacunas'] ?></div>
                 <div class="kpi-label">Vacunas aplicadas</div>
             </div>
             <div class="kpi-card red">
-                <div class="kpi-icon">💊</div>
+                <div class="kpi-icon">&#128138;</div>
                 <div class="kpi-value"><?= $stats['tratamientos'] ?></div>
                 <div class="kpi-label">Tratamientos registrados</div>
             </div>
@@ -293,7 +293,7 @@ $meses_labels_fmt = array_map(function($m) use($meses_nombres) {
 
             <!-- Citas por estado -->
             <div class="chart-card">
-                <h4>📊 Estado de Citas</h4>
+                <h4>&#128202; Estado de Citas</h4>
                 <div class="chart-wrap">
                     <canvas id="chartEstados"></canvas>
                 </div>
@@ -304,7 +304,7 @@ $meses_labels_fmt = array_map(function($m) use($meses_nombres) {
         <div class="charts-grid">
             <!-- Mascotas por especie -->
             <div class="chart-card">
-                <h4>🐾 Mascotas por Especie</h4>
+                <h4>&#128062; Mascotas por Especie</h4>
                 <div class="chart-wrap">
                     <canvas id="chartEspecies"></canvas>
                 </div>
@@ -338,9 +338,9 @@ $meses_labels_fmt = array_map(function($m) use($meses_nombres) {
         </div>
 
         <!-- ── Tabla: próximas dosis de vacunas ── -->
-        <p class="section-title">📋 Alertas y Seguimiento</p>
+        <p class="section-title">&#128203; Alertas y Seguimiento</p>
         <div class="report-table-card">
-            <h4>💉 Próximas Dosis de Vacunas</h4>
+            <h4>&#128137; Próximas Dosis de Vacunas</h4>
             <?php if(count($vacunas_prox) > 0): ?>
             <table>
                 <thead>
@@ -358,15 +358,15 @@ $meses_labels_fmt = array_map(function($m) use($meses_nombres) {
                     $urgente = $dias <= 14;
                 ?>
                 <tr>
-                    <td><strong>🐾 <?= htmlspecialchars($vac['nombre_mascota']) ?></strong></td>
+                    <td><strong>&#128062; <?= htmlspecialchars($vac['nombre_mascota']) ?></strong></td>
                     <td><?= htmlspecialchars($vac['nombre_dueño']) ?></td>
                     <td><?= htmlspecialchars($vac['nombre_vacuna']) ?></td>
                     <td><?= date('d/m/Y', strtotime($vac['proxima_dosis'])) ?></td>
                     <td>
                         <?php if($urgente): ?>
-                            <span class="fecha-prox">⚠️ En <?= $dias ?> día(s)</span>
+                            <span class="fecha-prox">&#9888; En <?= $dias ?> día(s)</span>
                         <?php else: ?>
-                            <span class="fecha-ok">✅ En <?= $dias ?> días</span>
+                            <span class="fecha-ok">&#9989; En <?= $dias ?> días</span>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -381,6 +381,7 @@ $meses_labels_fmt = array_map(function($m) use($meses_nombres) {
     </div><!-- /page-body -->
 </div><!-- /main-content -->
 
+<script src="huellitas-shared.js"></script>
 <script>
 // ── Colores adaptativos (dark mode) ─────────────────────────────────────────
 function isDark() { return document.body.classList.contains('dark-mode'); }
@@ -414,7 +415,7 @@ const chartConsultas = new Chart(ctxC, {
 
 // ── Chart: Citas por estado ──────────────────────────────────────────────────
 const ctxE = document.getElementById('chartEstados').getContext('2d');
-new Chart(ctxE, {
+const chartEstados = new Chart(ctxE, {
     type: 'doughnut',
     data: {
         labels: ['Pendientes','Completadas','Canceladas'],
@@ -444,7 +445,7 @@ new Chart(ctxE, {
 // ── Chart: Mascotas por especie ──────────────────────────────────────────────
 const ctxEsp = document.getElementById('chartEspecies').getContext('2d');
 const coloresPastel = ['#22773c','#3498db','#f39c12','#9b59b6','#1abc9c','#e74c3c'];
-new Chart(ctxEsp, {
+const chartEspecies = new Chart(ctxEsp, {
     type: 'bar',
     data: {
         labels: <?= json_encode(array_keys($mascotas_especie)) ?>,
@@ -470,16 +471,21 @@ new Chart(ctxEsp, {
 // Actualizar colores al cambiar modo oscuro
 document.getElementById('darkModeToggle')?.addEventListener('click', () => {
     setTimeout(() => {
-        [chartConsultas].forEach(ch => {
-            ch.options.scales.x.grid.color = gridColor();
-            ch.options.scales.y.grid.color = gridColor();
-            ch.options.scales.x.ticks.color = textColor();
-            ch.options.scales.y.ticks.color = textColor();
-            ch.update();
-        });
+        chartConsultas.options.scales.x.grid.color = gridColor();
+        chartConsultas.options.scales.y.grid.color = gridColor();
+        chartConsultas.options.scales.x.ticks.color = textColor();
+        chartConsultas.options.scales.y.ticks.color = textColor();
+        chartConsultas.update();
+
+        chartEspecies.options.scales.x.grid.color = gridColor();
+        chartEspecies.options.scales.x.ticks.color = textColor();
+        chartEspecies.options.scales.y.ticks.color = textColor();
+        chartEspecies.update();
+
+        chartEstados.options.plugins.legend.labels.color = textColor();
+        chartEstados.update();
     }, 350);
 });
 </script>
-<script src="huellitas-shared.js"></script>
 </body>
 </html>

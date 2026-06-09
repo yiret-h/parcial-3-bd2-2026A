@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
             ':unidad'=> trim($_POST['unidad']),
             ':desc'  => trim($_POST['descripcion']),
         ]);
-        $mensaje = "<div class='alert success'>✅ Medicamento agregado al catálogo.</div>";
+        $mensaje = "<div class='alert success'>&#9989; Medicamento agregado al catálogo.</div>";
     } catch(PDOException $e) {
         $mensaje = "<div class='alert error'>Error: " . $e->getMessage() . "</div>";
     }
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     try {
         $stmt = $conexion->prepare("UPDATE medicamento SET stock = stock + :delta WHERE id_medicamento = :id");
         $stmt->execute([':delta' => (int)$_POST['delta'], ':id' => (int)$_POST['id_medicamento']]);
-        $mensaje = "<div class='alert success'>✅ Stock actualizado.</div>";
+        $mensaje = "<div class='alert success'>&#9989; Stock actualizado.</div>";
     } catch(PDOException $e) {}
 }
 
@@ -65,8 +65,8 @@ $pagina_activa  = 'medicamentos';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo de Medicamentos - Huellitas</title>
-    <link rel="stylesheet" href="huellitas-shared.css">
-    <link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4">
+    <link rel="stylesheet" href="huellitas-layout.css?v=4">
     <style>
         .page-body { padding:30px 40px; }
         .layout { display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start; }
@@ -116,7 +116,7 @@ $pagina_activa  = 'medicamentos';
         <?= $mensaje ?>
         <div class="layout">
             <div class="form-card">
-                <h4>🧪 Agregar Medicamento</h4>
+                <h4>&#129514; Agregar Medicamento</h4>
                 <form method="POST">
                     <input type="hidden" name="accion" value="crear">
                     <div class="form-group">
@@ -161,7 +161,7 @@ $pagina_activa  = 'medicamentos';
             <div>
                 <div class="toolbar">
                     <div class="search-box">
-                        <span>🔍</span>
+                        <span>&#128269;</span>
                         <input type="text" id="buscador" placeholder="Buscar medicamento…" oninput="filtrar()">
                     </div>
                     <select class="filter-cat" id="filtro-cat" onchange="filtrar()">
@@ -183,11 +183,11 @@ $pagina_activa  = 'medicamentos';
                         <div class="med-nombre"><?= htmlspecialchars($m['nombre']) ?></div>
                         <div class="med-pa"><?= htmlspecialchars($m['principio_activo']) ?></div>
                         <div><span class="cat-badge"><?= htmlspecialchars($m['categoria'] ?: 'Sin categoría') ?></span></div>
-                        <div class="pres-row">📦 <?= htmlspecialchars($m['presentacion'] ?: 'N/A') ?></div>
+                        <div class="pres-row">&#128230; <?= htmlspecialchars($m['presentacion'] ?: 'N/A') ?></div>
                         <div class="stock-row">
                             <div>
                                 <div class="stock-num <?= $bajo?'stock-bajo':'' ?>"><?= $m['stock'] ?></div>
-                                <div class="stock-label"><?= htmlspecialchars($m['unidad']) ?> <?= $bajo?'⚠️ Stock bajo':'' ?></div>
+                                <div class="stock-label"><?= htmlspecialchars($m['unidad']) ?> <?= $bajo?'&#9888; Stock bajo':'' ?></div>
                             </div>
                         </div>
                         <div class="stock-controls">
@@ -211,7 +211,7 @@ $pagina_activa  = 'medicamentos';
                     <?php endforeach; ?>
                 </div>
                 <?php else: ?>
-                    <div class="empty-msg">🧪 El catálogo está vacío. Agrega el primer medicamento.</div>
+                    <div class="empty-msg">&#129514; El catálogo está vacío. Agrega el primer medicamento.</div>
                 <?php endif; ?>
             </div>
         </div>

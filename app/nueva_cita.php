@@ -48,7 +48,7 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link rel="stylesheet" href="huellitas-shared.css"><link rel="stylesheet" href="huellitas-layout.css">
+    <link rel="stylesheet" href="huellitas-shared.css?v=4"><link rel="stylesheet" href="huellitas-layout.css?v=4">
     <style>
         .page-body { padding: 35px 40px; }
         .form-card { border-radius: 12px; padding: 35px; max-width: 600px; margin: 0 auto; }
@@ -72,7 +72,7 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
     <div class="page-body">
         <?= $mensaje ?>
         <div class="form-card">
-            <h3>📅 Programar Nueva Cita</h3>
+            <h3>&#128197; Programar Nueva Cita</h3>
             <form method="POST">
                 <div class="form-group">
                     <label>Paciente (Mascota):</label>
@@ -90,10 +90,10 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
                 <div class="form-group">
                     <label>Tipo de Cita (Motivo General):</label>
                     <select name="tipo_cita" required style="border-color: #f39c12; border-width: 2px;">
-                        <option value="Consulta General">🩺 Consulta General</option>
-                        <option value="Vacunación">💉 Vacunación</option>
-                        <option value="Desparasitación">💊 Desparasitación</option>
-                        <option value="Revisión/Control">📋 Revisión / Control</option>
+                        <option value="Consulta General">&#129658; Consulta General</option>
+                        <option value="Vacunación">&#128137; Vacunación</option>
+                        <option value="Desparasitación">&#128138; Desparasitación</option>
+                        <option value="Revisión/Control">&#128203; Revisión / Control</option>
                         <option value="Peluquería/Baño">✂️ Peluquería / Baño</option>
                         <option value="Otro">Otro</option>
                     </select>
