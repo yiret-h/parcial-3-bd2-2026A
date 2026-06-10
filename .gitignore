@@ -1,0 +1,25 @@
+# Claude Code / sesiones de IA
+.claude/
+.claude.json
+CLAUDE.md
+.claude-*/
+
+# LibreOffice / OpenOffice lock files
+.~lock.*#
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backups y temporales
+*.bak
+*.tmp
+*.log
