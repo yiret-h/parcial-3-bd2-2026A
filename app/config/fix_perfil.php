@@ -30,7 +30,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto'])) {
     if ($_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
         $filename = $id_mascota . '_' . time() . '.' . $ext;
-        move_uploaded_file($_FILES['foto']['tmp_name'], $dir . $filename);
+        if (move_uploaded_file($_FILES['foto']['tmp_name'], $dir . $filename)) {
+            try {
+                $stmt = $conexion->prepare("INSERT INTO fotografia_mascota (ruta_archivo, id_mascota) VALUES (:ruta, :id_mascota)");
+                $stmt->execute([':ruta' => $filename, ':id_mascota' => $id_mascota]);
+            } catch(PDOException $e) {}
+        }
+    }
+    header("Location: perfil_mascota.php?id=$id_mascota");
+    exit();
+}
+
+// Eliminar foto
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_foto'])) {
+    $foto_to_delete = basename($_POST['delete_foto']);
+    $file_path = "imagenes/mascotas/" . $foto_to_delete;
+    if (strpos($foto_to_delete, $id_mascota . "_") === 0 && file_exists($file_path)) {
+        if (unlink($file_path)) {
+            try {
+                $stmt = $conexion->prepare("DELETE FROM fotografia_mascota WHERE ruta_archivo = :ruta");
+                $stmt->execute([':ruta' => $foto_to_delete]);
+            } catch(PDOException $e) {}
+        }
     }
     header("Location: perfil_mascota.php?id=$id_mascota");
     exit();

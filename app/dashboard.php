@@ -36,13 +36,37 @@ try {
 } catch(PDOException $e) {}
 
 // Contar alertas urgentes (hoy o mañana)
-$alertas_urgentes = 0;
+$alertas_hoy = 0;
+$alertas_manana = 0;
 $hoy = date('Y-m-d');
 $manana = date('Y-m-d', strtotime('+1 day'));
 
 foreach ($citas_proximas as $c) {
     $fecha = date('Y-m-d', strtotime($c['fecha_hora']));
-    if ($fecha == $hoy || $fecha == $manana) $alertas_urgentes++;
+    if ($fecha == $hoy) $alertas_hoy++;
+    elseif ($fecha == $manana) $alertas_manana++;
+}
+foreach ($vacunas_proximas as $v) {
+    if (!empty($v['proxima_dosis'])) {
+        $fecha = date('Y-m-d', strtotime($v['proxima_dosis']));
+        if ($fecha == $hoy) $alertas_hoy++;
+        elseif ($fecha == $manana) $alertas_manana++;
+    }
+}
+
+$mostrar_alerta = false;
+$mensaje_alerta = "";
+if (($alertas_hoy > 0 || $alertas_manana > 0) && !isset($_SESSION['welcome_alert_shown'])) {
+    $mostrar_alerta = true;
+    $_SESSION['welcome_alert_shown'] = true;
+    
+    if ($alertas_hoy > 0 && $alertas_manana > 0) {
+        $mensaje_alerta = "Tienes <b>{$alertas_hoy}</b> recordatorio(s) para hoy y <b>{$alertas_manana}</b> para mañana.";
+    } elseif ($alertas_hoy > 0) {
+        $mensaje_alerta = "Tienes <b>{$alertas_hoy}</b> recordatorio(s) para hoy.";
+    } elseif ($alertas_manana > 0) {
+        $mensaje_alerta = "Tienes <b>{$alertas_manana}</b> recordatorio(s) para mañana.";
+    }
 }
 // Pasar todos los eventos a Javascript para notificaciones en tiempo real
 $eventos_js = [];
@@ -195,7 +219,7 @@ foreach ($vacunas_proximas as $v) {
                                 $clase_badge = ($dias <= 1) ? 'badge-today' : 'badge-soon';
                                 $texto_badge = ($dias == 0) ? 'HOY' : (($dias == 1) ? 'Mañana' : "En $dias día(s)");
                             ?>
-                            <tr>
+                            <tr onclick="showResumenCita('<?= htmlspecialchars(addslashes($c['mascota'])) ?>', '<?= htmlspecialchars(addslashes($c['dueño'])) ?>', '<?= date('d/m/Y', strtotime($c['fecha_hora'])) ?> <?= $hora_cita ?>', '<?= htmlspecialchars(addslashes($c['motivo_previo'])) ?>')" style="cursor: pointer;" title="Ver resumen">
                                 <td><strong><?= htmlspecialchars($c['mascota']) ?></strong></td>
                                 <td><?= htmlspecialchars($c['dueño']) ?></td>
                                 <td><?= date('d/m/Y', strtotime($c['fecha_hora'])) ?> <span style="color:var(--color-muted); font-size:11px;"><?= $hora_cita ?></span></td>
@@ -225,7 +249,7 @@ foreach ($vacunas_proximas as $v) {
                                 $clase_badge = ($dias <= 1) ? 'badge-today' : 'badge-soon';
                                 $texto_badge = ($dias == 0) ? 'HOY' : (($dias == 1) ? 'Mañana' : "En $dias día(s)");
                             ?>
-                            <tr>
+                            <tr onclick="showResumenVacuna('<?= htmlspecialchars(addslashes($v['mascota'])) ?>', '<?= htmlspecialchars(addslashes($v['dueño'])) ?>', '<?= htmlspecialchars(addslashes($v['vacuna'])) ?>', '<?= date('d/m/Y', strtotime($v['proxima_dosis'])) ?> <?= $hora_vac ?>')" style="cursor: pointer;" title="Ver resumen">
                                 <td><strong><?= htmlspecialchars($v['mascota']) ?></strong></td>
                                 <td><?= htmlspecialchars($v['dueño']) ?></td>
                                 <td><?= htmlspecialchars($v['vacuna']) ?></td>
@@ -294,22 +318,96 @@ function checkRealtimeReminders() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    <?php if ($alertas_urgentes > 0): ?>
+    <?php if ($mostrar_alerta): ?>
     // Notificación general de bienvenida
     Swal.fire({
         title: '¡Atención!',
-        html: 'Tienes <b><?= $alertas_urgentes ?> recordatorio(s)</b> urgente(s) programados para hoy o mañana (Citas o Vacunas).<br><br>Revisa la sección de recordatorios en el panel.',
+        html: '<?= $mensaje_alerta ?><br><br>Revisa la sección de recordatorios en el panel.',
         icon: 'warning', iconColor: '#f39c12', confirmButtonColor: '#0c83a7', confirmButtonText: 'Entendido, revisar',
-        toast: true, position: 'top-end', showConfirmButton: false, timer: 6000, timerProgressBar: true,
+        toast: true, position: 'top-end', showConfirmButton: false, timer: 8000, timerProgressBar: true,
         background: document.body.classList.contains('dark-mode') ? '#0b1f26' : '#ffffff',
         color: document.body.classList.contains('dark-mode') ? '#ffffff' : '#333333'
     });
     <?php endif; ?>
+
+    window.cerrarModalResumen = function() {
+        document.getElementById('modalResumen').style.display = 'none';
+    };
+
+    window.showResumenCita = function(mascota, dueño, fecha, motivo) {
+        document.getElementById('modal-title').innerHTML = '&#128197; Detalles de la Cita';
+        document.getElementById('modal-fecha').textContent = fecha;
+        document.getElementById('modal-paciente').innerHTML = '🐾 <span>' + mascota + '</span>';
+        document.getElementById('modal-dueno').textContent = dueño;
+        document.getElementById('label-motivo').textContent = 'Motivo de la cita';
+        document.getElementById('modal-motivo').textContent = motivo;
+        document.getElementById('btn-ir').textContent = 'Ir a Citas';
+        document.getElementById('btn-ir').style.background = '#f39c12';
+        document.getElementById('btn-ir').onclick = () => window.location.href = 'citas.php';
+        document.getElementById('modalResumen').style.display = 'flex';
+    };
+
+    window.showResumenVacuna = function(mascota, dueño, vacuna, fecha) {
+        document.getElementById('modal-title').innerHTML = '&#128137; Detalles de Vacunación';
+        document.getElementById('modal-fecha').textContent = fecha;
+        document.getElementById('modal-paciente').innerHTML = '🐾 <span>' + mascota + '</span>';
+        document.getElementById('modal-dueno').textContent = dueño;
+        document.getElementById('label-motivo').textContent = 'Vacuna a aplicar';
+        document.getElementById('modal-motivo').textContent = vacuna;
+        document.getElementById('btn-ir').textContent = 'Ir a Consultas';
+        document.getElementById('btn-ir').style.background = '#1500FF';
+        document.getElementById('btn-ir').onclick = () => window.location.href = 'consultas.php';
+        document.getElementById('modalResumen').style.display = 'flex';
+    };
 
     // Iniciar el reloj comprobador de citas y vacunas (Revisa cada 30 segundos)
     checkRealtimeReminders();
     setInterval(checkRealtimeReminders, 30000);
 });
 </script>
+
+<style>
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<!-- Modal Detalles -->
+<div id="modalResumen" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,20,30,0.6); backdrop-filter: blur(4px); z-index:9999; align-items:center; justify-content:center;" onclick="if(event.target.id === 'modalResumen') cerrarModalResumen()">
+    <div style="background: var(--bg-card, #ffffff); width: 90%; max-width: 550px; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); overflow: hidden; animation: modalIn 0.3s ease;">
+        <div style="background: linear-gradient(135deg, #0c83a7 0%, #34aed4 100%); padding: 20px 24px; color: white; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="modal-title" style="margin: 0; font-family: 'Nunito', sans-serif; font-size: 20px; display: flex; align-items: center; gap: 10px;">🩺 Detalles</h3>
+            <button onclick="cerrarModalResumen()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">✕</button>
+        </div>
+        <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px; max-height: 70vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+                <div>
+                    <span style="font-size: 11px; color: var(--color-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Fecha programada</span>
+                    <div id="modal-fecha" style="font-weight: 700; color: #3498db; font-size: 16px;"></div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+                <div>
+                    <span style="font-size: 11px; color: var(--color-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Paciente</span>
+                    <div id="modal-paciente" style="font-weight: 600; color: var(--color-text); font-size: 15px;"></div>
+                </div>
+                <div>
+                    <span style="font-size: 11px; color: var(--color-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Dueño</span>
+                    <div id="modal-dueno" style="font-weight: 600; color: var(--color-text); font-size: 15px;"></div>
+                </div>
+            </div>
+            <div>
+                <span id="label-motivo" style="font-size: 11px; color: var(--color-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Motivo</span>
+                <div id="modal-motivo" style="font-size: 15px; margin-top: 4px; color: var(--color-text);"></div>
+            </div>
+        </div>
+        <div style="padding: 16px 24px; text-align: right; border-top: 1px solid var(--color-border); background: rgba(0,0,0,0.02); display: flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="cerrarModalResumen()" style="background: transparent; color: var(--color-text); border: 1px solid var(--color-border); padding: 10px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='var(--color-hover)'" onmouseout="this.style.background='transparent'">Cerrar</button>
+            <button id="btn-ir" style="background: #0c83a7; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: filter 0.2s;" onmouseover="this.style.filter='brightness(0.9)'" onmouseout="this.style.filter='none'">Ir a...</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

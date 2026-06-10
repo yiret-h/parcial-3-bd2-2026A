@@ -13,13 +13,11 @@ Este aplicativo web gestiona las operaciones de una clínica veterinaria. Permit
 2. Abrir phpMyAdmin o su gestor de base de datos preferido.
 3. Crear una base de datos llamada `clinica_veterinaria`.
 4. Importar el script `ddl/Base de datos.sql` en la base de datos recién creada.
-5. **¡IMPORTANTE!** Configurar las credenciales de la base de datos en el archivo `app/config/conexion.php`. Actualmente usa el usuario `admin_vet`, deberás cambiarlo a `root` (o el usuario de tu servidor local) para poder probar la aplicación.
-6. Acceder a la aplicación desde el navegador web mediante `http://localhost/parcial-3-bd2-2026A/entregas/yiret-arenas-proyecto12/app/`.
+5. Acceder a la aplicación desde el navegador web mediante `http://localhost/parcial-3-bd2-2026A/entregas/yiret-arenas-proyecto12/app/`.
 
 ## Datos de Acceso
 **Usuario**: admin
-**Contraseña**: admin (la contraseña está cifrada en la base de datos mediante BCRYPT, verificar el código si se configuró distinto o usar las funciones de registro si existen).
-
+**Contraseña**: 123456
 ## Requisitos Cumplidos
 - RF1: Registro de dueños y mascotas.
 - RF2: Catálogo de especies y razas.

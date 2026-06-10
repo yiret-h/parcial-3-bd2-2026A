@@ -27,7 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto'])) {
     if ($_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
         $filename = $id_mascota . '_' . time() . '.' . $ext;
-        move_uploaded_file($_FILES['foto']['tmp_name'], $dir . $filename);
+        if (move_uploaded_file($_FILES['foto']['tmp_name'], $dir . $filename)) {
+            try {
+                $stmt = $conexion->prepare("INSERT INTO fotografia_mascota (ruta_archivo, id_mascota) VALUES (:ruta, :id_mascota)");
+                $stmt->execute([':ruta' => $filename, ':id_mascota' => $id_mascota]);
+            } catch(PDOException $e) {}
+        }
     }
     header("Location: perfil_mascota.php?id=$id_mascota");
     exit();
@@ -38,7 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_foto'])) {
     $foto_to_delete = basename($_POST['delete_foto']);
     $file_path = "imagenes/mascotas/" . $foto_to_delete;
     if (strpos($foto_to_delete, $id_mascota . "_") === 0 && file_exists($file_path)) {
-        unlink($file_path);
+        if (unlink($file_path)) {
+            try {
+                $stmt = $conexion->prepare("DELETE FROM fotografia_mascota WHERE ruta_archivo = :ruta");
+                $stmt->execute([':ruta' => $foto_to_delete]);
+            } catch(PDOException $e) {}
+        }
     }
     header("Location: perfil_mascota.php?id=$id_mascota");
     exit();
@@ -362,7 +372,7 @@ $fotos_js = array_map(function($f) { return str_replace('\\', '/', $f); }, $foto
 <div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,20,30,0.85); backdrop-filter: blur(5px); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
     <div style="position: relative; max-width: 90%; display: flex; align-items: center; justify-content: center;">
         <button onclick="prevImage(event)" style="position: absolute; left: 10px; background: rgba(0,0,0,0.6); border: none; color: white; font-size: 24px; cursor: pointer; z-index: 10000; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'">&#10094;</button>
-        <img id="lightbox-img" src="" style="max-width:100%; max-height:85vh; border-radius:12px; box-shadow:0 15px 40px rgba(0,0,0,0.5); border: 3px solid white; cursor: pointer;" onclick="document.getElementById('lightbox').style.display='none'">
+        <img id="lightbox-img" src="" style="min-width:350px; min-height:350px; width:auto; height:auto; max-width:90vw; max-height:80vh; object-fit:cover; border-radius:12px; box-shadow:0 15px 40px rgba(0,0,0,0.5); border: 3px solid white; cursor: pointer;" onclick="document.getElementById('lightbox').style.display='none'">
         <button onclick="nextImage(event)" style="position: absolute; right: 10px; background: rgba(0,0,0,0.6); border: none; color: white; font-size: 24px; cursor: pointer; z-index: 10000; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'">&#10095;</button>
     </div>
     <p style="color: white; font-family: 'Nunito', sans-serif; margin-top: 15px; font-weight: 800; opacity: 0.8; cursor: pointer;" onclick="document.getElementById('lightbox').style.display='none'">Haz clic en la imagen o en el fondo para cerrar</p>

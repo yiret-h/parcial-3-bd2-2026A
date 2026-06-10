@@ -94,7 +94,6 @@ $nombre_usuario = $_SESSION['usuario']; $rol_usuario = $_SESSION['rol'];
                         <option value="Vacunación">&#128137; Vacunación</option>
                         <option value="Desparasitación">&#128138; Desparasitación</option>
                         <option value="Revisión/Control">&#128203; Revisión / Control</option>
-                        <option value="Peluquería/Baño">✂️ Peluquería / Baño</option>
                         <option value="Otro">Otro</option>
                     </select>
                 </div>
